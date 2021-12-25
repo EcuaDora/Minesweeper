@@ -9,15 +9,15 @@ import static com.company.GameMines.countOpenedCells;
 import static com.company.GameMines.youWon;
 
 /**
- * Класс, отвечающий за действия с ячейками и их отрисовку
+ * The class responsible for actions with cells and their drawing
  */
 public class Cell {
 
-    private  boolean isOpen, isMine, isFlag; //isOpen - открыта ячейка или нет, isMine - заминирована ячейка или нет, isFlag - есть флаг или нет
-    private int countBombNear; // количество бомб вблизи
+    private  boolean isOpen, isMine, isFlag; // isOpen - is the cell open or not, isMine - is the cell mined or not, isFlag - is there a flag or not
+    private int countBombNear; // number of bombs near
 
     /**
-     * открываем ячейку и считаем открытые ячейки
+     * open the cell and count the open cells
      */
     void open () {
         isOpen = true;
@@ -25,51 +25,62 @@ public class Cell {
         if (!isMine) countOpenedCells++;
     }
     /**
-     * минируем ячейку
+     * put a mine in the cell
      */
     void  mine () {
         isMine = true;
     }
     /**
      *
-     * @param count - число,  устанавливаем количество бомб рядом (сэттер)
+     * @param count - number, set the number of bombs near (setter)
      */
     void setCountBomb(int count) {
         countBombNear = count;
     }
     /**
      *
-     * @return возвращает количество бомб (геттер)
+     * @return returns the number of bombs (getter)
      */
     int getCountBomb () {
         return countBombNear;
     }
     /**
      *
-     * @return  проверка - открыта или не открыта ячейка
+     * @return  check whether the cell is open or not
      */
     boolean isNotOpen() {
         return !isOpen;
     }
     /**
      *
-     * @return возвращается заминирована ли ячейка или нет
+     * @return returns whether the cell is booby-trapped or not
      */
     boolean isMined() {
         return isMine;
     }
     /**
-     *  инвертиртирую флаг
+     *  inverting the flag
      */
     void inverseFlag() {
         isFlag = !isFlag;
     }
+    boolean firstinverse()
+    {
+        if (this.isMined())
+        { isMine = false;
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
     /**
-     * рисуем бомбу
-     * @param g - объект типа Graphics
-     * @param x - координата бомбы по оси ОХ
-     * @param y - координата бомбы по оси ОY
-     * @param color - цвет бомбы
+     * Drawing the bomb
+     * @param g - an object of type Graphics
+     * @param x - coordinate of the bomb along the OX axis
+     * @param y - coordinate of the bomb along the OY-axis
+     * @param color - bomb color
      */
     void paintBomb (Graphics g, int x, int y, Color color){
         g.setColor(color);
@@ -80,12 +91,12 @@ public class Cell {
         g.fillRect(x*BLOCK_SIZE + 11, y*BLOCK_SIZE + 10, 4, 4);
     }
     /**
-     * рисуем строку, чтоб отображать флаг или цифры в ячейках
-     * @param g - объект типа Graphics
-     * @param str - строка, которую необходимо перерисовать
-     * @param x - координата надписи по оси ОХ
-     * @param y - координата надписи по оси ОY
-     * @param color - цвет надписи
+     * draw a line to display a flag or numbers in the cells
+     * @param g - an object of type Graphics
+     * @param str - the line that needs to be redrawn
+     * @param x - coordinate of the inscription along the ОХ axis
+     * @param y - coordinate of the inscription along the OY axis
+     * @param color - inscription color
      */
     void paintString (Graphics g, String str, int x, int y, Color color){
         g.setColor(color);
@@ -94,26 +105,27 @@ public class Cell {
     }
 
     /**
-     * отрисовка игрового поля
-     * @param g - объект типа Graphics
-     * @param x - координата необходимой отрисовки по оси ОХ
-     * @param y - координата необходимой отрисовки по оси ОY
+     * Drawing the playing field
+     * @param g - an object of type Graphics
+     * @param x - coordinate of the required drawing along the OX axis
+     * @param y - coordinate of the required drawing along the ОY axis
      */ void paint (Graphics g, int x, int y) {
         // расчерчиваем поле на квадраты
         g.setColor(Color.lightGray);
         g.drawRect(x*BLOCK_SIZE, y*BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
 
-        if (!isOpen) { // если ячейка не открыта, тогда если ... рисуем бомбу, в противном случае рисуем прямоугольник - ячейка закрыта
+        if (!isOpen) { // if the cell is not open, then if ... draw a bomb, otherwise draw a rectangle - the cell is closed
             if ((bangMine || youWon) &&  isMine) paintBomb(g, x, y, Color.black);
             else {
                 g.setColor(Color.lightGray);
                 g.fill3DRect(x*BLOCK_SIZE, y*BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, true);
-                if (isFlag) paintString(g, SIGN_OF_FLAG, x, y, Color.red); // рисуем флаг
+                if (isFlag) paintString(g, SIGN_OF_FLAG, x, y, Color.red); // Drawing the flag
             }
         }
-        else if (isMine) paintBomb(g, x, y, bangMine? Color.red : Color.black); //ячейка открыта, то если в ячейке бомба - рисуем бомбу, если бомбы нет, то устанавливаем кол-во бомб в округе
+        else if (isMine) paintBomb(g, x, y, bangMine? Color.red : Color.black); // cell is open, then if there is a bomb in the cell - draw a bomb, if there is no bomb, then set the number of bombs in the area
         else if (countBombNear > 0) paintString(g, Integer.toString(countBombNear), x, y, new Color (COLOR_OF_NUMBERS[countBombNear-1]));
 
     }
 
 }
+
