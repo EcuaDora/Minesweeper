@@ -4,7 +4,9 @@ import java.awt.*; // обеспечивает рисование окна
 import java.awt.event.*;    // обеспечивает обработку событий
 import javax.swing.*;           // чтоб рисовалсь объекты в окне открытом
 import java.util.*;
-
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Random;
 
 
 /**
@@ -86,7 +88,10 @@ public class GameMines extends JFrame {
      * explosion coordinates on the OY direction
      */
     public static int bangY;
-
+    /**
+     * первый клик по полю
+     */
+    private boolean firstclick;
 
     /**
      *
@@ -103,7 +108,7 @@ public class GameMines extends JFrame {
      *  main class constructor
      */
      void setUpWindow() {
-
+        firstclick = false;
         setTitle(TITLE_OF_PROGRAM);     // Define the program header
         setDefaultCloseOperation(EXIT_ON_CLOSE); // говорим, что при закрытии окна, прекратится работа программы
         setBounds(START_LOCATION, START_LOCATION, FIELD_SIZE*BLOCK_SIZE+FIELD_DX, FIELD_SIZE*BLOCK_SIZE+FIELD_DY); // устанавливаем стартовую позицию окна и его размеры
@@ -119,13 +124,9 @@ public class GameMines extends JFrame {
         /**
          *определим прослушиватель нажатия на мышь
          */
-        canvas.addMouseListener(new MouseAdapter() {
+        canvas.addMouseListener(new MouseAdapter() { //обрабатываем нажатия мыши по полю игры
 
             @Override       // переопределяем метод mouseReleased()
-
-            /**
-             * обрабатываем нажатия мыши по полю игры
-             */
             public void mouseReleased(MouseEvent e) {
 
                 super.mouseReleased(e); //вызываем метод mouseReleased() у родительского класса
@@ -134,7 +135,14 @@ public class GameMines extends JFrame {
                 int y = e.getY()/BLOCK_SIZE; //и получаем ее координаты (координаты клика мыши)
 
                 if (e.getButton() == MOUSE_BUTTON_LEFT && !bangMine && !youWon) // левая кнопка мыши отжата, но я не победил или мина не взорвалась
-                    if (field[y][x].isNotOpen()) { // если ячейка не открыта, то я ее открываю
+                    if (field[y][x].isNotOpen()) // если ячейка не открыта, то я ее открываю
+                    
+                         if (!firstclick) {
+                            if (!field[y][x].firstinverse()) {
+                                init_one_field_cell(y, x);
+                            }
+                            firstclick = true;
+                        }
                         openCells(x,y);
                         youWon = countOpenedCells == FIELD_SIZE*FIELD_SIZE - NUMBER_OF_MINES; // проверка - может на данный момент я открыл все ячейки и тогда я победил
 
@@ -182,7 +190,8 @@ public class GameMines extends JFrame {
         field[y][x].open(); //открываем ячейку
         if (field[y][x].getCountBomb() > 0 || bangMine) return; // количество бомб в ячейке больше 0 или бомба взорвалась - 3 условие выхода из метода
         for (int dx = -1; dx <2; dx++) // двойной цикл по соседним 8 ячейкам, который этот метод снова вызывает
-            for (int dy = -1; dy <2; dy++) openCells(x + dx, y + dy);
+            for (int dy = -1; dy <2; dy++) 
+                openCells(x + dx, y + dy);
     }
 
     /**
@@ -206,8 +215,10 @@ public class GameMines extends JFrame {
             field[y][x].mine();
             countMines ++;
         }
-
-        // считаем мины вокруг
+        countMines();
+        out();
+    }
+    private void countMines() {// считаем мины вокруг
         for (x = 0; x < FIELD_SIZE; x++)            // перебор объектов(ячеек) на поле
             for (y = 0; y < FIELD_SIZE; y++)
                 if (!field[y][x].isMined()) {
@@ -227,5 +238,20 @@ public class GameMines extends JFrame {
 
     }
 
-}
+    void init_one_field_cell(int y0, int x0) {
+        int x = random.nextInt(FIELD_SIZE);
+        int y = random.nextInt(FIELD_SIZE);
+        while (field[y][x].isMined() && (x != x0 && y != y0)) {
+            x = random.nextInt(FIELD_SIZE);
+            y = random.nextInt(FIELD_SIZE);
+        }
+
+        field[y][x].mine();
+        countMines();
+        System.out.println("Recounted!");
+        out();
+    }
+    
+    
+
 
