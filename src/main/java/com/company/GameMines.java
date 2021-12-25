@@ -1,18 +1,17 @@
 package com.company;
 
-import java.awt.*; // обеспечивает рисование окна
-import java.awt.event.*;    // обеспечивает обработку событий
-import javax.swing.*;           // чтоб рисовалсь объекты в окне открытом
-import java.util.*;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Random;
 
 
 /**
- *the main class of the game, inherits the properties of the JFrame class. It initializes and graphically displays the field
+ * the main class of the game, inherits the properties of the JFrame class. It initializes and graphically displays the field
  */
-public class GameMines extends JFrame {
+class GameMines extends JFrame
+{
 
     /**
      * the program name
@@ -23,11 +22,11 @@ public class GameMines extends JFrame {
      */
     public static final String SIGN_OF_FLAG = "f";
     /**
-     *the block size in pixels
+     * the block size in pixels
      */
     public static final int BLOCK_SIZE = 30;
     /**
-     *  the field size in blocks
+     * the field size in blocks
      */
     public static final int FIELD_SIZE = 9;
     /**
@@ -39,7 +38,7 @@ public class GameMines extends JFrame {
      */
     public static final int FIELD_DY = 37 + 18;
     /**
-     *  coordinates of the window start position (top left corner)
+     * coordinates of the window start position (top left corner)
      */
     public static final int START_LOCATION = 200;
     /**
@@ -73,7 +72,7 @@ public class GameMines extends JFrame {
      */
     public static int countOpenedCells;
     /**
-     *Boolean variable, indicates that the user has won
+     * Boolean variable, indicates that the user has won
      */
     public static boolean youWon;
     /**
@@ -88,16 +87,17 @@ public class GameMines extends JFrame {
      * explosion coordinates on the OY direction
      */
     public static int bangY;
+
     /**
-     * первый клик по полю
+     * !!!!!!!!!! первый клик
      */
     private boolean firstclick;
 
     /**
-     *
      * @param args - main method, creates an instance of the program so that you can see the frame, defines the entry point into the program
      */
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
 
         GameMines main = new GameMines();
         main.setUpWindow();
@@ -105,143 +105,167 @@ public class GameMines extends JFrame {
     }
 
     /**
-     *  main class constructor
+     * main class constructor
      */
-     void setUpWindow() {
+    void setUpWindow()
+    {
         firstclick = false;
         setTitle(TITLE_OF_PROGRAM);     // Define the program header
-        setDefaultCloseOperation(EXIT_ON_CLOSE); // говорим, что при закрытии окна, прекратится работа программы
-        setBounds(START_LOCATION, START_LOCATION, FIELD_SIZE*BLOCK_SIZE+FIELD_DX, FIELD_SIZE*BLOCK_SIZE+FIELD_DY); // устанавливаем стартовую позицию окна и его размеры
-        setResizable(false); //устанавливаем, что нельзя менять масштаб окна
+        setDefaultCloseOperation(EXIT_ON_CLOSE); // the program stops working when the window is closed
+        setBounds(START_LOCATION, START_LOCATION, FIELD_SIZE * BLOCK_SIZE + FIELD_DX, FIELD_SIZE * BLOCK_SIZE + FIELD_DY); // set the starting position of the window and its size
+        setResizable(false); // set that the window cannot be changed to a different scale
 
 
         TimerLabel timeLabel = new TimerLabel();
-        timeLabel.setHorizontalAlignment(SwingConstants.CENTER); // выравниваем по горизонтали
+        timeLabel.setHorizontalAlignment(SwingConstants.CENTER); // align horizontally
 
 
         Canvas canvas = new Canvas();
-        canvas.setBackground(Color.white); //устанавливаем цвет фона
+        canvas.setBackground(Color.white); //set the background color
         /**
-         *определим прослушиватель нажатия на мышь
+         * define a mouse click listener
          */
-        canvas.addMouseListener(new MouseAdapter() { //обрабатываем нажатия мыши по полю игры
+        canvas.addMouseListener(new MouseAdapter()
+        {
 
-            @Override       // переопределяем метод mouseReleased()
-            public void mouseReleased(MouseEvent e) {
 
-                super.mouseReleased(e); //вызываем метод mouseReleased() у родительского класса
+            @Override
+            public void mouseReleased(MouseEvent e)
+            {
 
-                int x = e.getX()/BLOCK_SIZE; //обе строки обращаемся к е - объект типа MouseEvent
-                int y = e.getY()/BLOCK_SIZE; //и получаем ее координаты (координаты клика мыши)
+                super.mouseReleased(e); // call the mouseReleased() method of the parent class
 
-                if (e.getButton() == MOUSE_BUTTON_LEFT && !bangMine && !youWon) // левая кнопка мыши отжата, но я не победил или мина не взорвалась
-                    if (field[y][x].isNotOpen()) // если ячейка не открыта, то я ее открываю
-                    
-                         if (!firstclick) {
-                            if (!field[y][x].firstinverse()) {
+                int x = e.getX() / BLOCK_SIZE; // both lines access the e - object of MouseEvent type and
+                int y = e.getY() / BLOCK_SIZE; // get its coordinates (mouse click coordinates)
+
+                if (e.getButton() == MOUSE_BUTTON_LEFT && !bangMine && !youWon) // the left mouse button is pressed, but the user has not won or the mine has not exploded
+                    if (field[y][x].isNotOpen()) // if a cell is not open, I open it
+                    {
+                        if (!firstclick)
+                        {
+                            if (!field[y][x].firstinverse())
+                            {
                                 init_one_field_cell(y, x);
                             }
                             firstclick = true;
                         }
-                        openCells(x,y);
-                        youWon = countOpenedCells == FIELD_SIZE*FIELD_SIZE - NUMBER_OF_MINES; // проверка - может на данный момент я открыл все ячейки и тогда я победил
 
-                        if (bangMine){ //если взорвалась мина флаг-true, то запоминаю ее кординаты
+                        openCells(x, y);
+                        youWon = countOpenedCells == FIELD_SIZE * FIELD_SIZE - NUMBER_OF_MINES; // check - maybe at this point I have opened all the cells and then I have won
+
+                        if (bangMine)
+                        { // if a flag-true mine explodes, I remember its coordinates
                             bangX = x;
                             bangY = y;
                         }
                     }
 
-                if (e.getButton() == MOUSE_BUTTON_RIGHT) field[y][x].inverseFlag(); // правая кнопка мыши отжата, то инвертирую флаг (ставлю-не ставлю флаг)
+                if (e.getButton() == MOUSE_BUTTON_RIGHT)
+                {
+                    field[y][x].inverseFlag();
+                } // the right mouse button is depressed, then I invert the flag (put or not put the flag)
 
-                if (bangMine || youWon) timeLabel.stopTimer(); // остановка таймера
+                if (bangMine || youWon) timeLabel.stopTimer(); // timer stop
 
-                canvas.repaint(); // перерисовываю окно
+                canvas.repaint(); // redrawing the window
 
             }
         });
-         /**
-          *  канву в центр
-          */
-         add(BorderLayout.CENTER, canvas);
-         /**
-          * добавляем таймер вниз
-          */
-         add(BorderLayout.SOUTH, timeLabel);
         /**
-         * делаем окно видимым
+         *  put the canvass in the center
+         */
+        add(BorderLayout.CENTER, canvas);
+        /**
+         * add a timer down
+         */
+        add(BorderLayout.SOUTH, timeLabel);
+        /**
+         * make the window visible
          */
         setVisible(true);
         /**
-         * инициализация поля
+         * field initialization
          */
         initField();
     }
 
     /**
-     * рекурсивное  открытие ячеек
-     * @param x - координата ячейки по горизонтали( вдоль оси ОХ)
-     * @param y - координата ячейки по вертикали(вдоль оси ОУ)
+     * recursive cell opening
+     *
+     * @param x - coordinate of the cell horizontally (along the OX axis)
+     * @param y - vertical coordinate of the cell (along the OY axis)
      */
-    void openCells(int x, int y) {
-        if (x < 0 || x > FIELD_SIZE -1 || y < 0 || y > FIELD_SIZE -1 ) return; // неправильные координаты (за границей поля) - 1 условие выхода из метода
-        if (!field[y][x].isNotOpen()) return; // ячейка уже открыта - 2 условие выхода из метода
+    void openCells(int x, int y)
+    {
+        if (x < 0 || x > FIELD_SIZE - 1 || y < 0 || y > FIELD_SIZE - 1)
+            return; // incorrect coordinates (outside the field boundary) - 1 condition for exiting the method
+        if (!field[y][x].isNotOpen()) return; // cell is already open - 2 the exit condition of the method
 
-        field[y][x].open(); //открываем ячейку
-        if (field[y][x].getCountBomb() > 0 || bangMine) return; // количество бомб в ячейке больше 0 или бомба взорвалась - 3 условие выхода из метода
-        for (int dx = -1; dx <2; dx++) // двойной цикл по соседним 8 ячейкам, который этот метод снова вызывает
-            for (int dy = -1; dy <2; dy++) 
-                openCells(x + dx, y + dy);
+        field[y][x].open(); //open the cell
+        if (field[y][x].getCountBomb() > 0 || bangMine)
+            return; // the number of bombs in the cell is greater than 0 or the bomb has exploded - 3 condition for exiting the method
+        for (int dx = -1; dx < 2; dx++) // double loop through the neighboring 8 cells, which this method calls again
+            for (int dy = -1; dy < 2; dy++) openCells(x + dx, y + dy);
     }
 
     /**
-     * метод инициализации поля
+     * field initialization method
      */
-    void initField(){
-        int x,y, countMines = 0;
+    void initField()
+    {
+        int x, y, countMines = 0;
 
-        // создаем ячейки (двумерный массив объектов)
-        for (int x1= 0; x1 < FIELD_SIZE; x1++)          //вложенный цикл - создаем каждую клеточку - в каждой клеточке объект Сell()
-            for (int y1= 0 ; y1 < FIELD_SIZE; y1 ++)
+        // create cells (two-dimensional array of objects)
+        for (int x1 = 0; x1 < FIELD_SIZE; x1++)          // create cells (two-dimensional array of objects)
+            for (int y1 = 0; y1 < FIELD_SIZE; y1++)
                 field[y1][x1] = new Cell();
 
-        //минируем + мина в ячейке или нет?
-        while (countMines < NUMBER_OF_MINES){
-            do {
+        //mined and check whether there is a mine in the cell or not?
+        while (countMines < NUMBER_OF_MINES)
+        {
+            do
+            {
                 x = random.nextInt(FIELD_SIZE);
                 y = random.nextInt(FIELD_SIZE);
             }
             while (field[y][x].isMined());
             field[y][x].mine();
-            countMines ++;
+            countMines++;
         }
+
         countMines();
         out();
     }
-    private void countMines() {// считаем мины вокруг
-        for (x = 0; x < FIELD_SIZE; x++)            // перебор объектов(ячеек) на поле
-            for (y = 0; y < FIELD_SIZE; y++)
-                if (!field[y][x].isMined()) {
+    private void countMines()
+    {
+        // count the mines around
+        for (int x = 0; x < FIELD_SIZE; x++)            // to enumerate objects (cells) on the field
+            for (int y = 0; y < FIELD_SIZE; y++)
+                if (!field[y][x].isMined())
+                {
                     int count = 0;
                     for (int dx = -1; dx < 2; dx++)
-                        for (int dy = -1; dy < 2; dy++) {
+                        for (int dy = -1; dy < 2; dy++)
+                        {
                             int nX = x + dx;
                             int nY = y + dy;
-                            if (nX < 0 || nY < 0 || nX > FIELD_SIZE -1 || nY > FIELD_SIZE -1) {
+                            if (nX < 0 || nY < 0 || nX > FIELD_SIZE - 1 || nY > FIELD_SIZE - 1)
+                            {
                                 nX = x;
                                 nY = y;
                             }
-                            count += (field[nY][nX].isMined()) ? 1:0;
+                            count += (field[nY][nX].isMined()) ? 1 : 0;
                         }
                     field[y][x].setCountBomb(count);
                 }
-
     }
 
-    void init_one_field_cell(int y0, int x0) {
+    void init_one_field_cell(int y0, int x0)
+    {
         int x = random.nextInt(FIELD_SIZE);
         int y = random.nextInt(FIELD_SIZE);
-        while (field[y][x].isMined() && (x != x0 && y != y0)) {
+        while (field[y][x].isMined() && (x != x0 && y != y0))
+        {
             x = random.nextInt(FIELD_SIZE);
             y = random.nextInt(FIELD_SIZE);
         }
@@ -251,7 +275,21 @@ public class GameMines extends JFrame {
         System.out.println("Recounted!");
         out();
     }
-    
-    
+    private void out()
+    {
+        for(int i = 0; i < FIELD_SIZE; i++)
+        {
+            for(int j = 0; j < FIELD_SIZE; j++)
+            {
+                if(field[i][j].isMined())
+                    System.out.print(1);
+                else
+                    System.out.print(0);
+            }
+            System.out.println();
+        }
+    }
+}
+
 
 
